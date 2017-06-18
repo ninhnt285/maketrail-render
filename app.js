@@ -1,9 +1,8 @@
 var express = require('express');
+var router = require('./routes');
 
 var app = express();
 
-app.get('/', function(req, res) {
-	res.send('Express is working on IISNode!');
-});
+app.use(router);
 
 app.listen(process.env.PORT);
