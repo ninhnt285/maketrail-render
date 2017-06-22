@@ -59,18 +59,6 @@ $usage = @'
 '@
 
 
-if ([string]::IsNullorWhitespace($v) -or $h -eq $true) {
-    $usage
-exit
-}
-
-if ($v -ne "CC 2017" -and $v -ne "CC 2015.3" -and $v -ne "CC 2015" -and $v -ne "CC 2014" -and $v -ne "CC" -and $v -ne "CS6" -and $v -ne "CS5.5" -and $v -ne "CS5") {
-"
-`t`tTemplater CLI Error: Please specify a valid string for the version of After Effects you want to launch. Use -h for more information.
-"
-exit
-}
-
 if ($ui -eq $false) {
     $ui_switch = "-noui"
 } else {
@@ -106,7 +94,7 @@ if (Test-Path "$PSScriptRoot\templater-options.json"){
 
 }
 
-$app_dir="D:\Program Files\Adobe\Adobe After Effects $v\Support Files"
+$app_dir="D:\Program Files\Adobe\Adobe After Effects CC 2017\Support Files"
 $panels="$app_dir\Scripts\ScriptUI Panels"
 $templater_filename="Templater 2.jsxbin"
 $templater_panel="$panels\$templater_filename"
