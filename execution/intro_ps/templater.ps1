@@ -94,7 +94,7 @@ if (Test-Path "$PSScriptRoot\templater-options.json"){
 
 }
 
-$app_dir="D:\Program Files\Adobe\Adobe After Effects CC 2017\Support Files"
+$app_dir="$env:programfiles\Adobe\Adobe After Effects CC 2017\Support Files"
 $panels="$app_dir\Scripts\ScriptUI Panels"
 $templater_filename="Templater 2.jsxbin"
 $templater_panel="$panels\$templater_filename"
