@@ -14,13 +14,19 @@ const convert = function (id, inputPath, outputPath){
   console.log(id + ' is being converted...');
   child = spawn('ffmpeg.exe',['-y', '-i', inputPath, '-c:v', 'libx264', '-crf', '23', outputPath]);
   child.on("exit",function() {
-    fs.unlink(inputPath);
-    var data = checker.queue[0].data[0];
-    for (var p in data) {
-      try {
-        fs.unlink(path.join(__dirname, 'output/Output', data[p]));
-      } catch (e){
+    fs.unlink(inputPath, function(err) {
+      if (err) {
+        console.log(err);
       }
+    });
+    var data = checker.queue[0].data[0];
+    delete data.output;
+    for (var p in data) {
+      fs.unlink(path.join(__dirname, 'output/Output', data[p]), function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
     }
     // if finished rendering -> emit current job -> find the next job
     checker.queue.shift();
