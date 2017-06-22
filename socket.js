@@ -14,13 +14,15 @@ net.createServer(function(sock) {
   console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
 
   // Add a 'data' event handler to this instance of socket
-  sock.on('data', function(data) {
+  var data = '';
+  sock.on('data', function(chunk) {
+    data += chunk;
+  });
 
-    // Write the data back to the socket, the client will receive it as data from the server
+  sock.on('end', function(data) {
     obj = JSON.parse(data);
     worker.solve(obj);
     sock.write(obj.id);
-
   });
 
   // Add a 'close' event handler to this instance of socket
