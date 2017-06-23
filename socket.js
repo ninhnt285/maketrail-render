@@ -1,8 +1,8 @@
 var net = require('net');
-var worker = require('./worker');
+var worker = require('./worker2');
 var checker = require('./checker');
 
-var HOST = '127.0.0.1';
+var HOST = '45.32.216.6';
 var PORT = 6969;
 
 // Create a server instance, and chain the listen function to it
@@ -12,17 +12,17 @@ net.createServer(function(sock) {
 
   // We have a connection - a socket object is assigned to the connection automatically
   console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
-
+  // sock.setEncoding('utf8');
   // Add a 'data' event handler to this instance of socket
   var data = '';
   sock.on('data', function(chunk) {
     data += chunk;
   });
 
-  sock.on('end', function(data) {
+  sock.on('end', function() {
     obj = JSON.parse(data);
+    // console.log(obj);
     worker.solve(obj);
-    sock.write(obj.id);
   });
 
   // Add a 'close' event handler to this instance of socket

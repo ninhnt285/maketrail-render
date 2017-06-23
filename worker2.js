@@ -5,10 +5,10 @@ var fs = require('fs');
 var path = require('path');
 
 const worker = {};
+worker.QUEUE = [];
+worker.FLAG = 4;
 
-worker.init = function () {
-  worker.QUEUE = [];
-  worker.FLAG = 3;
+worker.init = function () { 
   worker.LOCATION_EXE = path.join(__dirname, 'execution/location_ps/templater.ps1 -m');
   worker.INTRO_EXE = path.join(__dirname, 'execution/intro_ps/templater.ps1 -m');
   worker.COMBINED_EXE = path.join(__dirname, 'execution/combined_ps/templater.ps1 -m');
@@ -28,7 +28,7 @@ worker.init = function () {
     obj.data_source = this.LOCATION_DATA;
     obj.aep = this.LOCATION_TEMPLATE;
     obj.source_footage = path.join(__dirname, 'footage');
-    obj.output_location = path.join(__dirname, 'output');
+    obj.output_location = path.join(__dirname, 'output/Output');
     fs.writeFileSync(this.LOCATION_OPTS, JSON.stringify(obj), 'utf8');
 
     // init intro options file
@@ -37,7 +37,7 @@ worker.init = function () {
     obj2.data_source = this.INTRO_DATA;
     obj2.aep = this.INTRO_TEMPLATE;
     obj2.source_footage = path.join(__dirname, 'footage');
-    obj2.output_location = path.join(__dirname, 'output');
+    obj2.output_location = path.join(__dirname, 'output/Output');
     fs.writeFileSync(this.INTRO_OPTS, JSON.stringify(obj2), 'utf8');
 
     // init combined options file
@@ -49,29 +49,42 @@ worker.init = function () {
     obj3.output_location = path.join(__dirname, 'output/Output');
     fs.writeFileSync(this.COMBINED_OPTS, JSON.stringify(obj3), 'utf8');
 
-    worker.start();
+    setTimeout(start, 15000);
   } catch (e){
     console.log('Init worker error!');
     console.log(e);
   }
 };
 
-worker.start = function () {
-  if (this.QUEUE.length > 0 && this.FLAG > 0){
-    job = this.QUEUE.shift();
-    this.FLAG--;
-    this.process(job);
+const start = function () {
+  console.log("Render queue: "+ worker.QUEUE.length);
+  if (worker.QUEUE.length > 0 && worker.FLAG > 0){
+    job2 = worker.QUEUE.shift();
+    worker.FLAG--;
+    process(job2);
   }
-  setTimeout(this.start, 30000);
+  setTimeout(start, 15000);
 };
 
-worker.process = function (job) {
-  cmd = this.INTRO_EXE;
-  if (job.type === 'location') cmd = this.LOCATION_EXE;
-  fs.writeFileSync(this.INTRO_DATA, JSON.stringify(job.data), 'utf8');
-  child = spawn('powershell.exe',[cmd]);
+const process = function (job) {
+  var cmd = worker.INTRO_EXE;
+  var file = worker.INTRO_DATA;
+  var input = path.join(__dirname, 'output/Output', 'intro_'+job.data[0].output+'.mov');
+  var output = path.join(__dirname, 'output/Output', 'intro_'+job.data[0].output+'_done.mov');
+  if (job.type === 'location') {
+    cmd = worker.LOCATION_EXE;
+    file = worker.LOCATION_DATA;
+    input = path.join(__dirname, 'output/Output', 'location_'+job.data[0].output+'.mov');
+    output = path.join(__dirname, 'output/Output', 'location_'+job.data[0].output+'_done.mov');
+  }
+  console.log(input);
+  fs.writeFileSync(file, JSON.stringify(job.data), 'utf8');
+  var child = spawn('powershell.exe',[cmd]);
   child.on("exit",function(){
-    this.FLAG++;
+    worker.FLAG++;
+    console.log(job.data[0].output);
+    console.log(input);
+    fs.rename(input, output);
     console.log(job.type + " has been rendered!");
   });
 };
@@ -102,19 +115,19 @@ worker.solve = function (tripData) {
 
   var combined = [{
     output: tripData.id,
-    intro: 'intro_' + tripData.id + '.mov'
+    intro: 'intro_' + tripData.id + '_done.mov'
   }];
-  if (locations[0]) combined[0].location1 = 'location_' + locations[0].output + '.mov';
-  if (locations[1]) combined[0].location2 = 'location_' + locations[1].output + '.mov';
-  if (locations[2]) combined[0].location3 = 'location_' + locations[2].output + '.mov';
-  if (locations[3]) combined[0].location4 = 'location_' + locations[3].output + '.mov';
-  if (locations[4]) combined[0].location5 = 'location_' + locations[4].output + '.mov';
-  if (locations[5]) combined[0].location6 = 'location_' + locations[5].output + '.mov';
-  if (locations[6]) combined[0].location7 = 'location_' + locations[6].output + '.mov';
-  if (locations[7]) combined[0].location8 = 'location_' + locations[7].output + '.mov';
-  if (locations[8]) combined[0].location9 = 'location_' + locations[8].output + '.mov';
-  if (locations[9]) combined[0].location10 = 'location_' + locations[9].output + '.mov';
-  if (locations[10]) combined[0].location11 = 'location_' + locations[10].output + '.mov';
+  if (tripData.locations[0]) combined[0].location1 = 'location_' + tripData.id + '_1' + '_done.mov';
+  if (tripData.locations[1]) combined[0].location2 = 'location_' + tripData.id + '_2' + '_done.mov';
+  if (tripData.locations[2]) combined[0].location3 = 'location_' + tripData.id + '_3' + '_done.mov';
+  if (tripData.locations[3]) combined[0].location4 = 'location_' + tripData.id + '_4' + '_done.mov';
+  if (tripData.locations[4]) combined[0].location5 = 'location_' + tripData.id + '_5' + '_done.mov';
+  if (tripData.locations[5]) combined[0].location6 = 'location_' + tripData.id + '_6' + '_done.mov';
+  if (tripData.locations[6]) combined[0].location7 = 'location_' + tripData.id + '_7' + '_done.mov';
+  if (tripData.locations[7]) combined[0].location8 = 'location_' + tripData.id + '_8' + '_done.mov';
+  if (tripData.locations[8]) combined[0].location9 = 'location_' + tripData.id + '_9' + '_done.mov';
+  if (tripData.locations[9]) combined[0].location10 = 'location_' + tripData.id + '_10' + '_done.mov';
+  if (tripData.locations[10]) combined[0].location11 = 'location_' + tripData.id + '_11' + '_done.mov';
   checker.push(combined);
 };
 
