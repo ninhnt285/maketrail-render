@@ -6,7 +6,7 @@ var path = require('path');
 
 const worker = {};
 worker.QUEUE = [];
-worker.FLAG = 4;
+worker.FLAG = 3;
 
 worker.init = function () { 
   worker.LOCATION_EXE = path.join(__dirname, 'execution/location_ps/templater.ps1 -m');
@@ -21,6 +21,14 @@ worker.init = function () {
   worker.LOCATION_TEMPLATE = path.join(__dirname, 'execution/location_ps/Location Slideshow.aep');
   worker.INTRO_TEMPLATE = path.join(__dirname, 'execution/intro_ps/Intro Scene.aep');
   worker.COMBINED_TEMPLATE = path.join(__dirname, 'execution/combined_ps/Combined Scenes.aep');
+  worker.COMBINED_TEMPLATE_10 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 10.aep');
+  worker.COMBINED_TEMPLATE_9 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 9.aep');
+  worker.COMBINED_TEMPLATE_8 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 8.aep');
+  worker.COMBINED_TEMPLATE_7 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 7.aep');
+  worker.COMBINED_TEMPLATE_6 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 6.aep');
+  worker.COMBINED_TEMPLATE_5 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 5.aep');
+  worker.COMBINED_TEMPLATE_4 = path.join(__dirname, 'execution/combined_ps/Combined Scenes 4.aep');
+
   try {
     // init location options file
     var obj = JSON.parse(fs.readFileSync(this.LOCATION_OPTS, 'utf8'));
@@ -77,16 +85,31 @@ const process = function (job) {
     input = path.join(__dirname, 'output/Output', 'location_'+job.data[0].output+'.mov');
     output = path.join(__dirname, 'output/Output', 'location_'+job.data[0].output+'_done.mov');
   }
-  console.log(input);
   fs.writeFileSync(file, JSON.stringify(job.data), 'utf8');
   var child = spawn('powershell.exe',[cmd]);
-  child.on("exit",function(){
+  child.on("exit",function(code){
+    if (code !== 0) {
+      console.log('Fail!');
+      worker.QUEUE.push(job);
+    }
     worker.FLAG++;
-    console.log(job.data[0].output);
-    console.log(input);
     fs.rename(input, output);
     console.log(job.type + " has been rendered!");
   });
+};
+
+const getTemplate = function (num){
+  switch (num){
+    case 10: return worker.COMBINED_TEMPLATE_10;
+    case 9: return worker.COMBINED_TEMPLATE_9;
+    case 8: return worker.COMBINED_TEMPLATE_8;
+    case 7: return worker.COMBINED_TEMPLATE_7;
+    case 6: return worker.COMBINED_TEMPLATE_6;
+    case 5: return worker.COMBINED_TEMPLATE_5;
+    case 4: return worker.COMBINED_TEMPLATE_4;
+    default: return worker.COMBINED_TEMPLATE;
+  }
+  return worker.COMBINED_TEMPLATE;
 };
 
 worker.solve = function (tripData) {
@@ -112,11 +135,11 @@ worker.solve = function (tripData) {
       image5: location.image5
     }] });
   });
-
   var combined = [{
     output: tripData.id,
     intro: 'intro_' + tripData.id + '_done.mov'
   }];
+  combined[0].template = getTemplate(tripData.locations.length);
   if (tripData.locations[0]) combined[0].location1 = 'location_' + tripData.id + '_1' + '_done.mov';
   if (tripData.locations[1]) combined[0].location2 = 'location_' + tripData.id + '_2' + '_done.mov';
   if (tripData.locations[2]) combined[0].location3 = 'location_' + tripData.id + '_3' + '_done.mov';
