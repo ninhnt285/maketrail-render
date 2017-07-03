@@ -5,8 +5,10 @@ var fs = require('fs');
 const checker = {};
 
 checker.queue = [];
+checker.sock = null;
 checker.period = 60000;
 checker.path = path.join(__dirname, 'output/Output');
+checker.COMBINED_OPTS = path.join(__dirname, 'execution/combined_ps/templater-options.json');
 checker.COMBINED_EXE = path.join(__dirname, 'execution/combined_ps/templater.ps1 -m');
 checker.COMBINED_DATA = path.join(__dirname, 'execution/combined_ps/combined.json');
 
@@ -14,6 +16,7 @@ const convert = function (id, inputPath, outputPath){
   console.log(id + ' is being converted...');
   child = spawn('ffmpeg.exe',['-y', '-i', inputPath, '-c:v', 'libx264', '-crf', '23', outputPath]);
   child.on("exit",function() {
+    checker.sock.write(id);
     fs.unlink(inputPath, function(err) {
       if (err) {
         console.log(err);
@@ -42,6 +45,10 @@ const render = function (combinedData){
   var c = 0;
   if (!fs.existsSync(inputPath)) {
     fs.writeFileSync(checker.COMBINED_DATA, JSON.stringify(combinedData), 'utf8');
+    // init combined options file
+    var obj3 = JSON.parse(fs.readFileSync(checker.COMBINED_OPTS, 'utf8'));
+    obj3.aep = combinedData[0].template;
+    fs.writeFileSync(checker.COMBINED_OPTS, JSON.stringify(obj3), 'utf8');
     child = spawn('powershell.exe', [checker.COMBINED_EXE]);
     child.stdout.on("data",function(data){
       c++;
@@ -69,7 +76,7 @@ const check = function () {
       try {
         for (var p in data) {
           // if not found a file -> wait for the next check
-          if (p !== 'output' && !fs.existsSync(path.join(__dirname, 'output/Output', data[p]))) {
+          if (p !== 'output' && p !== 'template' && !fs.existsSync(path.join(__dirname, 'output/Output', data[p]))) {
             setTimeout(check, checker.period);
             return;
           }

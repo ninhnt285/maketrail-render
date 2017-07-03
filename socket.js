@@ -14,20 +14,32 @@ net.createServer(function(sock) {
   console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
   // sock.setEncoding('utf8');
   // Add a 'data' event handler to this instance of socket
+  checker.sock = sock;
   var data = '';
   sock.on('data', function(chunk) {
+    if (chunk.toString() === 'end'){
+      try {
+        obj = JSON.parse(data);
+        // console.log(obj);
+        worker.solve(obj);
+      } catch (e){
+
+      }
+    }
     data += chunk;
   });
 
   sock.on('end', function() {
-    obj = JSON.parse(data);
-    // console.log(obj);
-    worker.solve(obj);
+    // worker.solve(obj);
   });
 
   // Add a 'close' event handler to this instance of socket
   sock.on('close', function(data) {
     console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
+  });
+
+  sock.on('error', function(err) {
+    console.log('CLOSED: ' + err);
   });
 
 }).listen(PORT, HOST);
