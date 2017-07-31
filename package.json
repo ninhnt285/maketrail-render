@@ -12,6 +12,8 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "child_process": "^1.0.2",
-    "express": "^4.15.3"
+    "express": "^4.15.3",
+    "image-size": "^0.6.1",
+    "request": "^2.81.0"
   }
 }

@@ -3,6 +3,7 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var fs = require('fs');
 const checker = {};
+const domain = 'http://ren1.maketrail.com/';
 
 checker.queue = [];
 checker.sock = null;
@@ -16,7 +17,7 @@ const convert = function (id, inputPath, outputPath){
   console.log(id + ' is being converted...');
   child = spawn('ffmpeg.exe',['-y', '-i', inputPath, '-c:v', 'libx264', '-crf', '23', outputPath]);
   child.on("exit",function() {
-    checker.sock.write(id);
+    checker.sock.write({id: id, url: domain + id + '.mp4'});
     fs.unlink(inputPath, function(err) {
       if (err) {
         console.log(err);

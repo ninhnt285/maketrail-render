@@ -1,8 +1,8 @@
 var net = require('net');
-var worker = require('./worker2');
+var worker = require('./worker');
 var checker = require('./checker');
 
-var HOST = '45.32.93.22';
+var HOST = 'localhost';
 var PORT = 6969;
 
 try {
@@ -10,6 +10,7 @@ try {
   var data = '';
   client.connect(PORT, HOST, () => {
     console.log('Connected');
+    client.write(JSON.stringify({ id: '647d1cd00000000000000001', url:'http://localhost:4001/resources/video/2017/7/0899788346622364474512e4c1b644a3.mp4'}));
 	checker.sock = client;
   });
   client.on('error', (err) => {
@@ -28,7 +29,7 @@ try {
     data += chunk;
   });
   worker.init();
-  checker.start();
+  // checker.start();
 } catch (e) {
   console.log(e);
 }
